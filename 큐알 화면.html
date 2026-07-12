@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>○○시 스마트 종량제 관리 시스템</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Noto+Sans+KR:wght@400;500;600;700;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F1EFE6;
+    --paper:#FBFAF5;
+    --ink:#1F2A24;
+    --ink-soft:#4A554D;
+    --pine:#2F5D50;
+    --pine-dark:#17342B;
+    --amber:#C88A2E;
+    --clay:#B5482C;
+    --line:#CFC7B4;
+    --line-soft:#E3DDCC;
+    --ok:#3F7A5C;
+    --font-kr:'Noto Sans KR', sans-serif;
+    --font-en:'Space Grotesk', sans-serif;
+    --font-mono:'IBM Plex Mono', monospace;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{height:100%;}
+  body{
+    font-family:var(--font-kr);
+    color:var(--ink);
+    background:
+      radial-gradient(circle at 12% 8%, rgba(47,93,80,0.07), transparent 40%),
+      radial-gradient(circle at 88% 92%, rgba(200,138,46,0.08), transparent 45%),
+      var(--bg);
+    min-height:100vh;
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    padding:32px 16px;
+  }
+  .device{
+    width:100%;
+    max-width:428px;
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:22px;
+    overflow:hidden;
+    box-shadow:0 30px 60px -20px rgba(23,52,43,0.28), 0 2px 0 rgba(0,0,0,0.02);
+    position:relative;
+    min-height:780px;
+    display:flex;
+    flex-direction:column;
+  }
+  /* ---------- header ---------- */
+  .topbar{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:16px 18px 14px;
+    border-bottom:1px solid var(--line-soft);
+    background:var(--paper);
+    position:relative;
+    z-index:5;
+  }
+  .topbar.official{
+    background:var(--pine-dark);
+    border-bottom:1px solid #0e241d;
+  }
+  .back-btn{
+    width:30px; height:30px;
+    border-radius:8px;
+    border:1px solid var(--line);
+    background:var(--paper);
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer;
+    flex-shrink:0;
+    font-family:var(--font-en);
+    color:var(--ink);
+  }
+  .topbar.official .back-btn{
+    border-color:rgba(255,255,255,0.25);
+    background:transparent;
+    color:#EAE6D8;
+  }
+  .back-btn.hidden{visibility:hidden;}
+  .topbar-title{
+    display:flex; flex-direction:column; gap:1px; flex:1;
+  }
+  .eyebrow{
+    font-family:var(--font-en);
+    font-size:10px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--pine);
+    font-weight:600;
+  }
+  .topbar.official .eyebrow{color:#CBA65A;}
+  .title-kr{
+    font-weight:700;
+    font-size:15px;
+    color:var(--ink);
+  }
+  .topbar.official .title-kr{color:#F4F1E6;}
+  .seal{
+    width:34px;height:34px;border-radius:50%;
+    border:1.5px solid var(--pine);
+    display:flex;align-items:center;justify-content:center;
+    font-family:var(--font-en);font-weight:700;font-size:11px;
+    color:var(--pine);
+    flex-shrink:0;
+  }
+  .topbar.official .seal{border-color:#CBA65A;color:#CBA65A;}
+
+  /* ---------- screens ---------- */
+  .screens{position:relative; flex:1; display:flex; flex-direction:column;}
+  .screen{
+    display:none;
+    flex-direction:column;
+    padding:22px 18px 26px;
+    flex:1;
+    animation:enter .38s cubic-bezier(.2,.8,.2,1);
+  }
+  .screen.active{display:flex;}
+  @keyframes enter{
+    from{opacity:0; transform:translateY(10px);}
+    to{opacity:1; transform:translateY(0);}
+  }
+  h1.h{
+    font-size:20px; font-weight:900; line-height:1.35;
+    margin-bottom:4px;
+  }
+  p.sub{
+    font-size:13px; color:var(--ink-soft); line-height:1.55; margin-bottom:20px;
+  }
+  .divider{height:1px; background:var(--line-soft); margin:18px 0;}
+
+  /* ---------- mode select cards ---------- */
+  .mode-card{
+    display:flex; align-items:center; gap:14px;
+    padding:18px 16px;
+    border:1px solid var(--line);
+    background:var(--paper);
+    border-radius:14px;
+    cursor:pointer;
+    margin-bottom:12px;
+    transition:transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+    text-align:left;
+    width:100%;
+  }
+  .mode-card:hover{transform:translateY(-2px); box-shadow:0 10px 24px -12px rgba(23,52,43,0.35); border-color:var(--pine);}
+  .mode-card .icon{
+    width:44px;height:44px;border-radius:10px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:20px;
+    background:rgba(47,93,80,0.09);
+    flex-shrink:0;
+  }
+  .mode-card.gov .icon{background:rgba(200,138,46,0.14);}
+  .mode-card .mc-title{font-weight:700; font-size:15px; margin-bottom:2px;}
+  .mode-card .mc-desc{font-size:12px; color:var(--ink-soft);}
+  .note{
+    font-size:11.5px; color:var(--ink-soft);
+    display:flex; gap:6px; align-items:flex-start;
+    margin-top:6px;
+    line-height:1.5;
+  }
+  .qr-hero{
+    display:flex; flex-direction:column; align-items:center;
+    padding:26px 10px 30px;
+    margin-bottom:6px;
+  }
+  .qr-box{
+    width:96px;height:96px;border-radius:16px;
+    background:var(--pine-dark);
+    display:flex;align-items:center;justify-content:center;
+    margin-bottom:16px;
+    position:relative;
+  }
+  .qr-box svg{width:56px;height:56px;}
+  .check-pulse{
+    position:absolute; right:-8px; bottom:-8px;
+    width:28px;height:28px;border-radius:50%;
+    background:var(--ok); border:3px solid var(--paper);
+    display:flex;align-items:center;justify-content:center;
+    color:#fff; font-size:13px; font-weight:700;
+  }
+  .status-line{
+    font-family:var(--font-mono); font-size:12px; color:var(--ok);
+    background:rgba(63,122,92,0.1);
+    padding:6px 12px; border-radius:20px;
+    margin-bottom:2px;
+  }
+
+  /* ---------- list menu (citizen home) ---------- */
+  .menu-list{display:flex; flex-direction:column; gap:10px;}
+  .menu-item{
+    display:flex; align-items:center; gap:14px;
+    padding:16px 14px;
+    border:1px solid var(--line-soft);
+    border-radius:12px;
+    background:var(--paper);
+    cursor:pointer;
+    position:relative;
+    transition:border-color .15s ease, background .15s ease;
+  }
+  .menu-item:hover{border-color:var(--pine); background:#F6F3E8;}
+  .menu-num{
+    font-family:var(--font-en); font-weight:700; font-size:12px;
+    color:var(--pine);
+    width:26px;height:26px;border-radius:7px;
+    border:1px solid var(--line);
+    display:flex;align-items:center;justify-content:center;
+    flex-shrink:0;
+  }
+  .menu-txt{flex:1;}
+  .menu-txt .mt-title{font-weight:600; font-size:14.5px;}
+  .menu-txt .mt-desc{font-size:11.5px; color:var(--ink-soft); margin-top:2px;}
+  .chev{color:var(--line); font-size:16px;}
+
+  /* ---------- tag card (signature element) ---------- */
+  .tag-card{
+    position:relative;
+    background:var(--paper);
+    border:1.5px dashed var(--pine);
+    border-radius:12px;
+    padding:20px 16px 16px;
+    margin-bottom:18px;
+  }
+  .tag-card::before{
+    content:"";
+    position:absolute; top:-8px; left:50%; transform:translateX(-50%);
+    width:16px;height:16px;border-radius:50%;
+    background:var(--bg);
+    border:1.5px dashed var(--pine);
+  }
+  .tag-stamp{
+    position:absolute; top:12px; right:14px;
+    font-family:var(--font-en);
+    font-size:9.5px; font-weight:700; letter-spacing:0.06em;
+    color:var(--ok);
+    border:1.5px solid var(--ok);
+    border-radius:20px;
+    padding:3px 9px;
+    transform:rotate(-6deg);
+    text-transform:uppercase;
+    background:rgba(63,122,92,0.06);
+  }
+  .tag-stamp.warn{color:var(--clay); border-color:var(--clay); background:rgba(181,72,44,0.06);}
+  .barcode{
+    display:flex; align-items:flex-end; gap:2px; height:26px; margin:10px 0 6px;
+  }
+  .barcode span{display:block; background:var(--ink); width:2px;}
+  .code-num{
+    font-family:var(--font-mono); font-size:15px; font-weight:600; letter-spacing:0.02em;
+  }
+  .kv-row{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:7px 0;
+    font-size:13px;
+    border-bottom:1px solid var(--line-soft);
+  }
+  .kv-row:last-child{border-bottom:none;}
+  .kv-row .k{color:var(--ink-soft);}
+  .kv-row .v{font-weight:600; text-align:right;}
+  .kv-row .v.mono{font-family:var(--font-mono); font-weight:500;}
+
+  /* ---------- form elements ---------- */
+  .field{margin-bottom:16px;}
+  .field label{
+    display:block; font-size:12.5px; font-weight:600; margin-bottom:7px; color:var(--ink);
+  }
+  .radio-grid{display:flex; flex-direction:column; gap:8px;}
+  .radio-opt{
+    display:flex; align-items:center; gap:10px;
+    padding:11px 12px;
+    border:1px solid var(--line);
+    border-radius:10px;
+    cursor:pointer;
+    font-size:13.5px;
+    transition:all .12s ease;
+  }
+  .radio-opt input{accent-color:var(--pine); width:15px; height:15px;}
+  .radio-opt.checked{border-color:var(--pine); background:rgba(47,93,80,0.06);}
+  .check-opt{
+    display:flex; align-items:center; gap:10px;
+    padding:11px 12px;
+    border:1px solid var(--line);
+    border-radius:10px;
+    cursor:pointer;
+    font-size:13.5px;
+    transition:all .12s ease;
+  }
+  .check-opt input{accent-color:var(--clay); width:15px; height:15px;}
+  .check-opt.checked{border-color:var(--clay); background:rgba(181,72,44,0.06);}
+  .upload-box{
+    border:1px dashed var(--line);
+    border-radius:10px;
+    padding:16px;
+    display:flex; align-items:center; gap:12px;
+    cursor:pointer;
+    font-size:13px;
+    color:var(--ink-soft);
+  }
+  .upload-box:hover{border-color:var(--pine);}
+  .thumb-row{display:flex; gap:8px; margin-top:10px;}
+  .thumb{width:52px;height:52px;border-radius:8px;object-fit:cover; border:1px solid var(--line);}
+  .loc-chip{
+    display:flex; align-items:center; gap:8px;
+    font-size:12.5px;
+    background:rgba(47,93,80,0.07);
+    color:var(--pine);
+    padding:9px 12px; border-radius:10px;
+  }
+  textarea, input[type=text], input[type=password]{
+    width:100%;
+    font-family:var(--font-kr);
+    font-size:13.5px;
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:12px 13px;
+    background:var(--paper);
+    color:var(--ink);
+    outline:none;
+    transition:border-color .15s ease;
+  }
+  textarea{resize:vertical; min-height:76px;}
+  textarea:focus, input:focus{border-color:var(--pine);}
+  input::placeholder, textarea::placeholder{color:#A9A18C;}
+
+  .btn{
+    width:100%;
+    padding:14px 16px;
+    border-radius:11px;
+    border:none;
+    font-family:var(--font-kr);
+    font-weight:700;
+    font-size:14.5px;
+    cursor:pointer;
+    text-align:center;
+    transition:transform .1s ease, opacity .15s ease;
+  }
+  .btn:active{transform:scale(0.98);}
+  .btn-primary{background:var(--pine); color:#F5F2E6;}
+  .btn-primary:hover{background:var(--pine-dark);}
+  .btn-amber{background:var(--amber); color:#2A1B04;}
+  .btn-ghost{background:transparent; border:1px solid var(--line); color:var(--ink);}
+  .btn-block-gap{margin-top:8px;}
+  .btn:disabled{opacity:0.45; cursor:not-allowed;}
+
+  .spacer{flex:1;}
+
+  /* ---------- report done ---------- */
+  .done-wrap{
+    display:flex; flex-direction:column; align-items:center; text-align:center;
+    padding-top:20px;
+  }
+  .done-icon{
+    width:64px;height:64px;border-radius:50%;
+    background:var(--ok); color:#fff;
+    display:flex;align-items:center;justify-content:center;
+    font-size:28px; margin-bottom:18px;
+  }
+
+  /* ---------- store search / inventory ---------- */
+  .search-row{
+    display:flex; gap:8px; margin-bottom:6px;
+  }
+  .search-row input{flex:1;}
+  .search-row button{
+    padding:0 16px; border-radius:10px; border:none;
+    background:var(--pine); color:#F5F2E6; font-weight:700; font-size:13px; cursor:pointer;
+  }
+  .hint{font-size:11px; color:#A9A18C; margin-bottom:16px;}
+  .store-card{
+    border:1px solid var(--line-soft);
+    border-radius:12px;
+    padding:14px 14px 6px;
+    margin-bottom:12px;
+  }
+  .store-head{display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;}
+  .store-name{font-weight:700; font-size:14.5px;}
+  .store-meta{font-size:11.5px; color:var(--ink-soft); margin-top:3px;}
+  .dist-pill{
+    font-family:var(--font-mono); font-size:11px;
+    background:var(--bg); border:1px solid var(--line-soft);
+    padding:3px 9px; border-radius:20px; color:var(--ink-soft);
+  }
+  .stock-grid{display:flex; flex-direction:column; gap:6px; margin:8px 0 10px;}
+  .stock-row{display:flex; align-items:center; gap:8px; font-size:12px;}
+  .stock-label{width:66px; color:var(--ink-soft); flex-shrink:0;}
+  .stock-bar-track{flex:1; height:6px; border-radius:4px; background:var(--line-soft); overflow:hidden;}
+  .stock-bar-fill{height:100%; border-radius:4px; background:var(--ok);}
+  .stock-bar-fill.low{background:var(--amber);}
+  .stock-bar-fill.out{background:var(--clay); width:100% !important;}
+  .stock-num{width:44px; text-align:right; font-family:var(--font-mono); flex-shrink:0;}
+  .status-tag{
+    display:inline-flex; align-items:center; gap:5px;
+    font-size:11px; font-weight:700; padding:4px 10px; border-radius:20px;
+    margin-bottom:10px;
+  }
+  .status-tag.ok{background:rgba(63,122,92,0.12); color:var(--ok);}
+  .status-tag.low{background:rgba(181,72,44,0.1); color:var(--clay);}
+  .map-toggle{
+    text-align:center; font-size:12.5px; color:var(--pine); font-weight:600;
+    padding:12px; border:1px solid var(--line-soft); border-radius:10px; cursor:pointer;
+    margin-top:4px;
+  }
+  .map-panel{
+    margin-top:12px; border-radius:12px; overflow:hidden; border:1px solid var(--line-soft);
+    display:none;
+  }
+  .map-panel.open{display:block;}
+  .map-panel svg{display:block; width:100%; height:auto; background:#E7E2D2;}
+
+  /* ---------- official login ---------- */
+  .login-wrap{padding-top:8px;}
+  .login-badge{
+    display:flex; align-items:center; gap:10px;
+    padding:12px 14px; border-radius:10px;
+    background:var(--pine-dark); color:#F0EBDA;
+    font-size:12px; margin-bottom:22px; line-height:1.5;
+  }
+
+  /* ---------- process stage buttons ---------- */
+  .stage-grid{display:flex; flex-direction:column; gap:8px; margin-bottom:18px;}
+  .stage-btn{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:13px 14px;
+    border:1px solid var(--line);
+    border-radius:10px;
+    cursor:pointer;
+    font-size:13.5px; font-weight:600;
+  }
+  .stage-btn.active{border-color:var(--amber); background:rgba(200,138,46,0.1); color:#8A5A17;}
+  .stage-check{
+    width:18px;height:18px;border-radius:50%;
+    border:1.5px solid var(--line);
+    display:flex;align-items:center;justify-content:center;
+    font-size:10px; flex-shrink:0;
+  }
+  .stage-btn.active .stage-check{background:var(--amber); border-color:var(--amber); color:#2A1B04;}
+
+  .toast{
+    position:absolute; left:50%; bottom:22px; transform:translateX(-50%) translateY(10px);
+    background:var(--pine-dark); color:#F5F2E6;
+    padding:11px 18px; border-radius:24px; font-size:12.5px; font-weight:600;
+    opacity:0; pointer-events:none; transition:all .25s ease;
+    white-space:nowrap;
+    z-index:20;
+  }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+
+  @media (max-width:460px){
+    body{padding:0;}
+    .device{border-radius:0; min-height:100vh; box-shadow:none; border:none;}
+  }
+</style>
+</head>
+<body>
+
+<div class="device">
+
+  <div class="topbar" id="topbar">
+    <button class="back-btn hidden" id="backBtn" onclick="goBack()">←</button>
+    <div class="topbar-title">
+      <span class="eyebrow" id="eyebrow">MUNICIPAL WASTE SYSTEM</span>
+      <span class="title-kr" id="titleKr">○○시 스마트 종량제</span>
+    </div>
+    <div class="seal" id="seal">시</div>
+  </div>
+
+  <div class="screens">
+
+    <!-- ① QR 스캔 후 -->
+    <section class="screen active" data-screen="qr">
+      <div class="qr-hero">
+        <div class="qr-box">
+          <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7" stroke="#F0EBDA" stroke-width="1.6"/><rect x="14" y="3" width="7" height="7" stroke="#F0EBDA" stroke-width="1.6"/><rect x="3" y="14" width="7" height="7" stroke="#F0EBDA" stroke-width="1.6"/><path d="M14 14h3v3h-3zM19 14h2v2h-2zM14 19h2v2h-2zM19 19h2v2h-2z" fill="#F0EBDA"/></svg>
+          <div class="check-pulse">✓</div>
+        </div>
+        <div class="status-line">QR CODE VERIFIED</div>
+      </div>
+      <h1 class="h" style="text-align:center;">QR코드가 정상적으로<br>인식되었습니다</h1>
+      <p class="sub" style="text-align:center;">이용하실 서비스를 선택해주세요.</p>
+
+      <button class="mode-card" onclick="go('citizenHome')">
+        <div class="icon">👤</div>
+        <div>
+          <div class="mc-title">시민 모드</div>
+          <div class="mc-desc">무단투기 신고 · 판매소 및 재고 조회</div>
+        </div>
+      </button>
+
+      <button class="mode-card gov" onclick="go('officialLogin')">
+        <div class="icon">🛡️</div>
+        <div>
+          <div class="mc-title">공무원 모드</div>
+          <div class="mc-desc">행정정보 조회 및 처리 (로그인 필요)</div>
+        </div>
+      </button>
+
+      <div class="note">※ 공무원 모드는 로그인 후 이용 가능합니다.</div>
+    </section>
+
+    <!-- ② 시민 모드 메인 -->
+    <section class="screen" data-screen="citizenHome">
+      <span class="eyebrow" style="margin-bottom:6px; display:block;">CITIZEN SERVICES</span>
+      <h1 class="h">이용 가능한 서비스</h1>
+      <p class="sub">봉투 태그에 있는 QR코드로 연결된 서비스입니다.</p>
+
+      <div class="menu-list">
+        <div class="menu-item" onclick="go('report')">
+          <div class="menu-num">01</div>
+          <div class="menu-txt">
+            <div class="mt-title">무단투기 신고</div>
+            <div class="mt-desc">스캔한 봉투와 관련된 위반 사항을 신고합니다</div>
+          </div>
+          <div class="chev">›</div>
+        </div>
+        <div class="menu-item" onclick="go('stores')">
+          <div class="menu-num">02</div>
+          <div class="menu-txt">
+            <div class="mt-title">종량제봉투 판매소 조회</div>
+            <div class="mt-desc">주변 판매소 위치와 영업시간을 확인합니다</div>
+          </div>
+          <div class="chev">›</div>
+        </div>
+        <div class="menu-item" onclick="go('stores')">
+          <div class="menu-num">03</div>
+          <div class="menu-txt">
+            <div class="mt-title">종량제봉투 재고 조회</div>
+            <div class="mt-desc">판매소별 규격별 재고 현황을 확인합니다</div>
+          </div>
+          <div class="chev">›</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ③ 무단투기 신고 -->
+    <section class="screen" data-screen="report">
+      <span class="eyebrow" style="margin-bottom:6px; display:block;">FILE A REPORT</span>
+      <h1 class="h">무단투기 신고</h1>
+      <p class="sub">스캔된 봉투 정보를 확인하고 신고 내용을 작성해주세요.</p>
+
+      <div class="tag-card">
+        <div class="tag-stamp">정상등록</div>
+        <span class="eyebrow">BAG ID</span>
+        <div class="code-num">B2026-00124578</div>
+        <div class="barcode" id="barcode1"></div>
+        <div class="kv-row"><span class="k">봉투 종류</span><span class="v">생활쓰레기 20L</span></div>
+        <div class="kv-row"><span class="k">등록 상태</span><span class="v" style="color:var(--ok);">정상 등록</span></div>
+      </div>
+
+      <div class="field">
+        <label>신고 유형</label>
+        <div class="radio-grid" id="reportTypeGroup">
+          <label class="radio-opt"><input type="radio" name="rtype" value="무단투기" checked> 무단투기</label>
+          <label class="radio-opt"><input type="radio" name="rtype" value="봉투 훼손"> 봉투 훼손</label>
+          <label class="radio-opt"><input type="radio" name="rtype" value="불법 종량제봉투"> 불법 종량제봉투</label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>사진 첨부</label>
+        <div class="upload-box" onclick="document.getElementById('fileInput').click()">
+          📷 현장 사진을 촬영하거나 첨부해주세요
+        </div>
+        <input type="file" id="fileInput" accept="image/*" multiple style="display:none" onchange="handlePhoto(event)">
+        <div class="thumb-row" id="thumbRow"></div>
+      </div>
+
+      <div class="field">
+        <label>위치</label>
+        <div class="loc-chip">📍 위치가 자동으로 등록되었습니다 · ○○시 ○○구 ○○동</div>
+      </div>
+
+      <div class="field">
+        <label>신고 내용</label>
+        <textarea id="reportDesc" placeholder="목격한 상황을 구체적으로 입력해주세요."></textarea>
+      </div>
+
+      <button class="btn btn-primary" onclick="submitReport()">신고 접수</button>
+    </section>
+
+    <!-- ④ 신고 완료 -->
+    <section class="screen" data-screen="reportDone">
+      <div class="done-wrap">
+        <div class="done-icon">✓</div>
+        <h1 class="h">신고가 정상적으로<br>접수되었습니다</h1>
+        <p class="sub">담당 부서에서 확인 후 처리 결과를 안내드립니다.</p>
+
+        <div class="tag-card" style="width:100%; text-align:left;">
+          <div class="tag-stamp">접수 완료</div>
+          <span class="eyebrow">RECEIPT NO.</span>
+          <div class="code-num" id="receiptNo">2026-001254</div>
+          <div class="divider" style="margin:12px 0;"></div>
+          <div class="kv-row"><span class="k">접수일시</span><span class="v mono" id="receiptTime">2026.09.15 19:42</span></div>
+          <div class="kv-row"><span class="k">처리상태</span><span class="v" style="color:var(--ok);">접수 완료</span></div>
+        </div>
+      </div>
+      <div class="spacer"></div>
+      <button class="btn btn-ghost" onclick="go('citizenHome')">서비스 목록으로 돌아가기</button>
+    </section>
+
+    <!-- ⑤ 판매소 및 재고 조회 -->
+    <section class="screen" data-screen="stores">
+      <span class="eyebrow" style="margin-bottom:6px; display:block;">FIND A DEALER</span>
+      <h1 class="h">종량제봉투 판매소 조회</h1>
+      <div class="search-row">
+        <input type="text" placeholder="지역 또는 주소 입력">
+        <button onclick="toast('검색 결과가 갱신되었습니다')">검색</button>
+      </div>
+      <div class="hint">예) ○○동</div>
+
+      <div class="store-card">
+        <div class="store-head">
+          <div>
+            <div class="store-name">○○마트</div>
+            <div class="store-meta">영업시간 09:00–22:00</div>
+          </div>
+          <div class="dist-pill">320m</div>
+        </div>
+        <span class="status-tag ok">● 재고 충분</span>
+        <div class="stock-grid">
+          <div class="stock-row"><span class="stock-label">10L</span><div class="stock-bar-track"><div class="stock-bar-fill" style="width:78%"></div></div><span class="stock-num">58개</span></div>
+          <div class="stock-row"><span class="stock-label">20L</span><div class="stock-bar-track"><div class="stock-bar-fill" style="width:95%"></div></div><span class="stock-num">132개</span></div>
+          <div class="stock-row"><span class="stock-label">50L</span><div class="stock-bar-track"><div class="stock-bar-fill" style="width:48%"></div></div><span class="stock-num">24개</span></div>
+          <div class="stock-row"><span class="stock-label">음식물 5L</span><div class="stock-bar-track"><div class="stock-bar-fill" style="width:64%"></div></div><span class="stock-num">41개</span></div>
+        </div>
+      </div>
+
+      <div class="store-card">
+        <div class="store-head">
+          <div>
+            <div class="store-name">△△편의점</div>
+            <div class="store-meta">24시간 영업</div>
+          </div>
+          <div class="dist-pill">510m</div>
+        </div>
+        <span class="status-tag low">● 재고 부족</span>
+        <div class="stock-grid">
+          <div class="stock-row"><span class="stock-label">10L</span><div class="stock-bar-track"><div class="stock-bar-fill out"></div></div><span class="stock-num">품절</span></div>
+          <div class="stock-row"><span class="stock-label">20L</span><div class="stock-bar-track"><div class="stock-bar-fill low" style="width:20%"></div></div><span class="stock-num">15개</span></div>
+          <div class="stock-row"><span class="stock-label">50L</span><div class="stock-bar-track"><div class="stock-bar-fill low" style="width:12%"></div></div><span class="stock-num">7개</span></div>
+        </div>
+      </div>
+
+      <div class="map-toggle" onclick="toggleMap()">🗺️ 가까운 판매소를 지도에서 확인하기</div>
+      <div class="map-panel" id="mapPanel">
+        <svg viewBox="0 0 380 220" preserveAspectRatio="xMidYMid slice">
+          <rect width="380" height="220" fill="#E7E2D2"/>
+          <path d="M0 40 H380 M0 90 H380 M0 140 H380 M0 190 H380" stroke="#D3CCB8" stroke-width="1"/>
+          <path d="M60 0 V220 M150 0 V220 M240 0 V220 M320 0 V220" stroke="#D3CCB8" stroke-width="1"/>
+          <circle cx="190" cy="110" r="5" fill="var(--pine)"/>
+          <circle cx="190" cy="110" r="10" fill="var(--pine)" opacity="0.25"/>
+          <text x="200" y="114" font-family="IBM Plex Mono" font-size="9" fill="#1F2A24">현재 위치</text>
+          <circle cx="150" cy="70" r="6" fill="var(--ok)"/>
+          <text x="160" y="73" font-family="IBM Plex Mono" font-size="9" fill="#1F2A24">○○마트 · 320m</text>
+          <circle cx="255" cy="150" r="6" fill="var(--clay)"/>
+          <text x="265" y="153" font-family="IBM Plex Mono" font-size="9" fill="#1F2A24">△△편의점 · 510m</text>
+        </svg>
+      </div>
+    </section>
+
+    <!-- ⑥ 공무원 로그인 -->
+    <section class="screen" data-screen="officialLogin">
+      <span class="eyebrow" style="margin-bottom:6px; display:block;">RESTRICTED ACCESS</span>
+      <h1 class="h">공무원 로그인</h1>
+      <div class="login-wrap">
+        <div class="login-badge">🔒 행정정보 보호를 위해 공무원 계정으로 로그인합니다. 무단 접근 시 관련 법령에 따라 처벌될 수 있습니다.</div>
+        <div class="field">
+          <label>아이디</label>
+          <input type="text" placeholder="공무원 아이디를 입력하세요" id="loginId">
+        </div>
+        <div class="field">
+          <label>비밀번호</label>
+          <input type="password" placeholder="비밀번호를 입력하세요" id="loginPw">
+        </div>
+        <button class="btn btn-amber" onclick="go('officialLookup')">로그인</button>
+      </div>
+    </section>
+
+    <!-- ⑦ 공무원 봉투 조회 -->
+    <section class="screen" data-screen="officialLookup">
+      <span class="eyebrow" style="margin-bottom:6px; display:block;">RECORD LOOKUP</span>
+      <h1 class="h">종량제봉투 정보 조회</h1>
+
+      <div class="tag-card">
+        <div class="tag-stamp">정상등록</div>
+        <span class="eyebrow">BAG ID</span>
+        <div class="code-num">B2026-00124578</div>
+        <div class="barcode" id="barcode2"></div>
+        <div class="kv-row"><span class="k">구매일</span><span class="v mono">2026.09.15</span></div>
+        <div class="kv-row"><span class="k">구매처</span><span class="v">○○마트</span></div>
+      </div>
+
+      <span class="eyebrow" style="display:block; margin-bottom:8px;">BUYER INFO</span>
+      <div class="tag-card" style="border-style:solid;">
+        <div class="kv-row"><span class="k">구매자</span><span class="v">홍○○</span></div>
+      </div>
+
+      <span class="eyebrow" style="display:block; margin-bottom:8px;">CASE STATUS</span>
+      <div class="tag-card" style="border-style:solid;">
+        <div class="kv-row"><span class="k">신고 접수 여부</span><span class="v" style="color:var(--ok);">접수 완료</span></div>
+        <div class="kv-row"><span class="k">처리 상태</span><span class="v" id="caseStatusVal">현장 확인 전</span></div>
+        <div class="kv-row"><span class="k">과거 위반 이력</span><span class="v">없음</span></div>
+      </div>
+
+      <div class="spacer"></div>
+      <button class="btn btn-amber" onclick="go('officialProcess')">행정처리 진행</button>
+    </section>
+
+    <!-- ⑧ 행정처리 -->
+    <section class="screen" data-screen="officialProcess">
+      <span class="eyebrow" style="margin-bottom:6px; display:block;">CASE PROCESSING</span>
+      <h1 class="h">행정처리</h1>
+      <p class="sub">담당 공무원이 현장 확인 결과를 등록합니다.</p>
+
+      <label style="display:block; font-size:12.5px; font-weight:600; margin-bottom:8px;">처리 단계 선택</label>
+      <div class="stage-grid" id="stageGrid">
+        <div class="stage-btn" data-stage="현장 확인" onclick="selectStage(this)"><span>현장 확인</span><span class="stage-check"></span></div>
+        <div class="stage-btn" data-stage="계도 실시" onclick="selectStage(this)"><span>계도 실시</span><span class="stage-check"></span></div>
+        <div class="stage-btn" data-stage="과태료 부과" onclick="selectStage(this)"><span>과태료 부과</span><span class="stage-check"></span></div>
+        <div class="stage-btn" data-stage="처리 완료" onclick="selectStage(this)"><span>처리 완료</span><span class="stage-check"></span></div>
+      </div>
+
+      <div class="field" id="violationField" style="display:none;">
+        <label>위반 유형 <span style="font-weight:400; color:var(--ink-soft);">(복수 선택 가능)</span></label>
+        <div class="radio-grid" id="violationGroup">
+          <label class="check-opt"><input type="checkbox" value="무단투기"> 무단투기</label>
+          <label class="check-opt"><input type="checkbox" value="지정장소 외 배출"> 지정장소 외 배출</label>
+          <label class="check-opt"><input type="checkbox" value="배출시간 미준수"> 배출시간 미준수</label>
+          <label class="check-opt"><input type="checkbox" value="재활용품 혼합배출"> 재활용품 혼합배출</label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>처리 메모</label>
+        <textarea id="procMemo" placeholder="현장 확인 및 조치 내용을 입력합니다."></textarea>
+      </div>
+
+      <div class="spacer"></div>
+      <button class="btn btn-amber" onclick="saveProcess()">저장</button>
+    </section>
+
+  </div>
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+  const headerConfig = {
+    qr:              {eyebrow:'MUNICIPAL WASTE SYSTEM', title:'○○시 스마트 종량제', official:false, seal:'시'},
+    citizenHome:      {eyebrow:'CITIZEN MODE',           title:'시민 모드',           official:false, seal:'시'},
+    report:           {eyebrow:'CITIZEN MODE',           title:'무단투기 신고',       official:false, seal:'시'},
+    reportDone:       {eyebrow:'CITIZEN MODE',           title:'접수 완료',           official:false, seal:'시'},
+    stores:           {eyebrow:'CITIZEN MODE',           title:'판매소 · 재고 조회',  official:false, seal:'시'},
+    officialLogin:    {eyebrow:'OFFICIAL MODE',          title:'공무원 로그인',       official:true,  seal:'官'},
+    officialLookup:   {eyebrow:'OFFICIAL MODE',          title:'봉투 정보 조회',      official:true,  seal:'官'},
+    officialProcess:  {eyebrow:'OFFICIAL MODE',          title:'행정처리',            official:true,  seal:'官'},
+  };
+  const history_ = ['qr'];
+
+  function renderBarcode(id){
+    const el = document.getElementById(id);
+    if(!el || el.childNodes.length) return;
+    const widths = [2,1,3,1,2,4,1,2,1,3,2,1,4,1,2,3,1,2,1,3,2,1,2,4,1,3];
+    widths.forEach(w=>{
+      const bar = document.createElement('span');
+      bar.style.width = w+'px';
+      bar.style.height = (14+w*4)+'px';
+      el.appendChild(bar);
+    });
+  }
+  renderBarcode('barcode1');
+  renderBarcode('barcode2');
+
+  function applyHeader(name){
+    const cfg = headerConfig[name];
+    document.getElementById('eyebrow').textContent = cfg.eyebrow;
+    document.getElementById('titleKr').textContent = cfg.title;
+    document.getElementById('seal').textContent = cfg.seal;
+    document.getElementById('topbar').classList.toggle('official', cfg.official);
+    document.getElementById('backBtn').classList.toggle('hidden', name === 'qr');
+  }
+
+  function go(name){
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+    document.querySelector('.screen[data-screen="'+name+'"]').classList.add('active');
+    applyHeader(name);
+    if(history_[history_.length-1] !== name) history_.push(name);
+    window.scrollTo(0,0);
+  }
+
+  function goBack(){
+    if(history_.length > 1){
+      history_.pop();
+      const prev = history_[history_.length-1];
+      document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+      document.querySelector('.screen[data-screen="'+prev+'"]').classList.add('active');
+      applyHeader(prev);
+    }
+  }
+
+  // radio highlight
+  document.querySelectorAll('#reportTypeGroup input').forEach(inp=>{
+    inp.addEventListener('change', ()=>{
+      document.querySelectorAll('#reportTypeGroup .radio-opt').forEach(o=>o.classList.remove('checked'));
+      inp.closest('.radio-opt').classList.add('checked');
+    });
+  });
+  document.querySelector('#reportTypeGroup .radio-opt').classList.add('checked');
+
+  function handlePhoto(e){
+    const row = document.getElementById('thumbRow');
+    Array.from(e.target.files).slice(0,3).forEach(file=>{
+      const img = document.createElement('img');
+      img.className = 'thumb';
+      img.src = URL.createObjectURL(file);
+      row.appendChild(img);
+    });
+  }
+
+  function submitReport(){
+    const now = new Date();
+    const pad = n => String(n).padStart(2,'0');
+    const stamp = `${now.getFullYear()}.${pad(now.getMonth()+1)}.${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+    document.getElementById('receiptTime').textContent = stamp;
+    const rand = Math.floor(1000 + Math.random()*8999);
+    document.getElementById('receiptNo').textContent = `2026-${String(rand).padStart(6,'0')}`;
+    go('reportDone');
+  }
+
+  let mapOpen = false;
+  function toggleMap(){
+    mapOpen = !mapOpen;
+    document.getElementById('mapPanel').classList.toggle('open', mapOpen);
+  }
+
+  function selectStage(el){
+    document.querySelectorAll('.stage-btn').forEach(b=>{
+      b.classList.remove('active');
+      b.querySelector('.stage-check').textContent = '';
+    });
+    el.classList.add('active');
+    el.querySelector('.stage-check').textContent = '✓';
+    document.getElementById('violationField').style.display = (el.dataset.stage === '과태료 부과') ? 'block' : 'none';
+  }
+
+  document.querySelectorAll('#violationGroup input[type=checkbox]').forEach(inp=>{
+    inp.addEventListener('change', ()=>{
+      inp.closest('.check-opt').classList.toggle('checked', inp.checked);
+    });
+  });
+
+  function saveProcess(){
+    const active = document.querySelector('.stage-btn.active');
+    if(!active){ toast('처리 단계를 선택해주세요'); return; }
+    if(active.dataset.stage === '과태료 부과'){
+      const checked = document.querySelectorAll('#violationGroup input:checked');
+      if(checked.length === 0){ toast('위반 유형을 선택해주세요'); return; }
+    }
+    document.getElementById('caseStatusVal').textContent = active.dataset.stage;
+    toast('저장되었습니다');
+    setTimeout(()=>go('officialLookup'), 650);
+  }
+
+  let toastTimer;
+  function toast(msg){
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(()=>t.classList.remove('show'), 1800);
+  }
+</script>
+</body>
+</html>
